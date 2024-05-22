@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -26,6 +27,12 @@ import androidx.compose.ui.zIndex
 
 @Composable
 fun BoxLibrary(books: List<BookModel> = DEFAULT_BOOKS) {
+
+
+    val expandedTopBarHeightInPx = with(LocalDensity.current) {
+        EXPANDED_TOP_BAR_HEIGHT.toPx()
+    }
+
     val listState = rememberLazyListState()
 
     val overlapHeightPx = with(LocalDensity.current) {
@@ -39,10 +46,20 @@ fun BoxLibrary(books: List<BookModel> = DEFAULT_BOOKS) {
         }
     }
 
+    val expandedTopBarAlpha by remember {
+        derivedStateOf {
+            if (isCollapsed) {
+                0.0f
+            } else {
+                ( (expandedTopBarHeightInPx - listState.firstVisibleItemScrollOffset) / expandedTopBarHeightInPx)*1.0f
+            }
+        }
+    }
+
     Box {
         CollapsedTopBar(modifier = Modifier.zIndex(2f), isCollapsed = isCollapsed)
         LazyColumn(state = listState) {
-            item { ExpandedTopBar() }
+            item { ExpandedTopBar(expandedTopBarAlpha) }
             items(items = books) { book ->
                 Book(model = book)
                 Spacer(modifier = Modifier.height(24.dp))
@@ -54,7 +71,7 @@ fun BoxLibrary(books: List<BookModel> = DEFAULT_BOOKS) {
 @Composable
 private fun CollapsedTopBar(modifier: Modifier = Modifier, isCollapsed: Boolean) {
     val color: Color by animateColorAsState(
-        if (isCollapsed) MaterialTheme.colors.background else Color.Transparent
+        if (isCollapsed) MaterialTheme.colors.primaryVariant else Color.Transparent
     )
     Box(
         modifier = modifier
@@ -65,17 +82,18 @@ private fun CollapsedTopBar(modifier: Modifier = Modifier, isCollapsed: Boolean)
         contentAlignment = Alignment.BottomStart
     ) {
         AnimatedVisibility(visible = isCollapsed) {
-            Text(text = "Library", style = MaterialTheme.typography.h6)
+            Text(text = "Library", style = MaterialTheme.typography.h6,color = MaterialTheme.colors.background)
         }
     }
 }
 
 @Composable
-private fun ExpandedTopBar() {
+private fun ExpandedTopBar(expandedTopBarAlpha: Float = 1.0f) {
     Box(
         modifier = Modifier
             .background(MaterialTheme.colors.primaryVariant)
             .fillMaxWidth()
+            .alpha(expandedTopBarAlpha)
             .height(EXPANDED_TOP_BAR_HEIGHT),
         contentAlignment = Alignment.BottomStart
     ) {

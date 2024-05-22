@@ -20,8 +20,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background,
                 ) {
                     // ScaffoldLibrary()
-                    // BoxLibrary()
-                    Material3ScaffoldLibrary()
+                    BoxLibrary()
+                    // Material3ScaffoldLibrary()
                 }
             }
         }
